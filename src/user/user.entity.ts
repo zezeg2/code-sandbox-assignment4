@@ -21,34 +21,34 @@ export enum UserRole {
   Host,
 }
 
-registerEnumType(UserRole, { name: 'userRole ' });
+registerEnumType(UserRole, { name: 'userRole' });
 @InputType({ isAbstract: true })
 @ObjectType()
 @Entity()
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
+  @Field(() => Number)
+  id: number;
+
+  @Column()
   @Field(() => String)
-  private _id: string;
+  email: string;
 
   @Column({ select: false })
   @Field(() => String)
-  private _email;
-
-  @Column({ select: false })
-  @Field(() => String)
-  private _password;
+  password: string;
 
   @Column({ default: 0 })
   @Field(() => UserRole)
   @IsEnum(UserRole)
-  private _role: UserRole;
+  role: UserRole;
 
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(): Promise<void> {
-    if (this._password) {
+    if (this.password) {
       try {
-        this._password = await bcrypt.hash(this._password, 10);
+        this.password = await bcrypt.hash(this.password, 10);
       } catch (error) {
         console.log(error);
         throw new InternalServerErrorException();
@@ -58,41 +58,9 @@ export class User extends BaseEntity {
 
   async checkPassword(inputPwd: string): Promise<boolean> {
     try {
-      return await bcrypt.compare(inputPwd, this._password);
+      return await bcrypt.compare(inputPwd, this.password);
     } catch (error) {
       throw new InternalServerErrorException();
     }
-  }
-
-  get id(): string {
-    return this._id;
-  }
-
-  set id(value: string) {
-    this._id = value;
-  }
-
-  get email() {
-    return this._email;
-  }
-
-  set email(value) {
-    this._email = value;
-  }
-
-  get password() {
-    return this._password;
-  }
-
-  set password(value) {
-    this._password = value;
-  }
-
-  get role(): UserRole {
-    return this._role;
-  }
-
-  set role(value: UserRole) {
-    this._role = value;
   }
 }

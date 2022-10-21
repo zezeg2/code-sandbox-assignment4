@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -8,8 +13,8 @@ import { Podcast } from './podcast/entities/podcast.entity';
 import { Episode } from './podcast/entities/episode.entity';
 import { UserModule } from './user/user.module';
 import { JwtModule } from './jwt/jwt.module';
-import { CommonModule } from './common/common.module';
 import { User } from './user/user.entity';
+import { JwtMiddleware } from './jwt/jwt.middleware';
 
 @Module({
   imports: [
@@ -24,13 +29,18 @@ import { User } from './user/user.entity';
       autoSchemaFile: true,
       context: ({ req }) => ({ user: req['user'] }),
     }),
+    JwtModule.forRoot({
+      privateKey: '>L9<`y_gzxl]c35VA]q=',
+    }),
     PodcastsModule,
     UserModule,
-    JwtModule.forRoot({
-      privateKey: process.env.PRIVATE_KEY,
-    }),
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
-export class AppModule {}
+// export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): any {
+    consumer
+      .apply(JwtMiddleware) //.exclude()
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}

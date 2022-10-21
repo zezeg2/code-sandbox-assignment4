@@ -1,1 +1,1 @@
-export const CONFIG_OPTION = 'CONFIG_OPTION';
+export const CONFIG_OPTIONS = 'CONFIG_OPTIONS';
